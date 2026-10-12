@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المصحف الذكي - التتبع والتعرف المباشر</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f1;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* العمود الجانبي للتتبع (يسار الشاشة) */
+        .sidebar-tracker {
+            width: 340px;
+            background: #ffffff;
+            border-right: 2px solid #d4e3d7;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            color: #1e4d2b;
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 2px solid #e2ede5;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tracker-card {
+            background: #f7faf8;
+            border: 1px solid #d4e3d7;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: right;
+        }
+
+        .tracker-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .tracker-value {
+            font-size: 17px;
+            font-weight: bold;
+            color: #1e4d2b;
+        }
+
+        .speech-preview {
+            font-size: 15px;
+            color: #333;
+            background: #ffffff;
+            border: 1px dashed #b2d8d8;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 55px;
+            max-height: 90px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .mic-container {
+            margin-top: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mic-btn {
+            background: linear-gradient(135deg, #2c5e3b 0%, #1e4229 100%);
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 18px rgba(44, 94, 59, 0.35);
+        }
+
+        .mic-btn.recording {
+            background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.7); }
+            70% { box-shadow: 0 0 0 18px rgba(217, 83, 79, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); }
+        }
+
+        /* المنطقة الرئيسية للمصحف */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-section {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .reciter-select-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            color: #1e4d2b;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #c8d8cb;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+
+        .quran-container {
+            width: 100%;
+            max-width: 900px;
+            background: #fffdf9;
+            border: 2px solid #e6dec9;
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            min-height: 480px;
+            line-height: 2.6;
+            font-size: 28px;
+            text-align: justify;
+            text-align-last: center;
+        }
+
+        /* تظليل الآية النشطة (Highlight) */
+        .ayah-span {
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: inline;
+        }
+
+        .ayah-span.active {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+            border-bottom: 3px solid #2e7d32;
+            font-weight: bold;
+        }
+
+        .ayah-number {
+            color: #8c734b;
+            font-size: 20px;
+            margin: 0 6px;
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- العمود الجانبي للتتبع الذكي (يسار الشاشة) -->
+    <div class="sidebar-tracker">
+        <div class="sidebar-title">
+            <i class="fa-solid fa-compass"></i>
+            <span>التتبع الذكي المباشر</span>
+        </div>
+
+        <div class="tracker-card">
+            <div class="tracker-label">السورة المكتشفة:</div>
+            <div class="tracker-value" id="detectedSurah">بانتظار القراءة...</div>
+        </div>
+
+        <div class="tracker-card">
+            <div class="tracker-label">الآية الحالية:</div>
+            <div class="tracker-value" id="detectedAyah">--</div>
+        </div>
+
+        <div class="tracker-card">
+            <div class="tracker-label">النص المسموع حالياً:</div>
+            <div class="speech-preview" id="liveSpeechText">اضغط الميكروفون واقرأ...</div>
+        </div>
+
+        <div class="mic-container">
+            <button class="mic-btn" id="micBtn" onclick="toggleTracking()">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <div class="status-text" id="statusText">اضغط الميكروفون للبدء بالاستماع والتتبع</div>
+        </div>
+    </div>
+
+    <!-- المنطقة الرئيسية لعرض الآيات والتظليل -->
+    <div class="main-content">
+        <div class="header-section">
+            <div style="font-weight:bold; color:#1e4d2b; font-size:20px;">المصحف الشريف - التتبع الصوتي</div>
+            <div class="reciter-select-group">
+                <label>القارئ المرجعي:</label>
+                <select id="reciterSelect">
+                    <option value="Minshawy_Murattal_128kbps">الشيخ محمد صديق المنشاوي</option>
+                    <option value="Muhammad_Ayyoub_128kbps">الشيخ محمد أيوب</option>
+                    <option value="Ali_Jaber_64kbps">الشيخ علي عبد الله جابر</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="quran-container" id="quranDisplay">
+            <div style="text-align:center; color:#777; font-size:22px; margin-top:160px;">
+                🎙️ اضغط على الميكروفون في العمود الأيسر واقرأ أي آية من القرآن الكريم<br>
+                (مثل: "كل من عليها فان" أو "وي
