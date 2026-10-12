@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع فلفل - المصحف الذكي والتتبع الصوتي</title>
+    <title>موقع فلفل - المصحف الذكي</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,6 @@
             font-weight: bold;
         }
 
-        /* شريط الميكروفون المطور مع الخط المزخرف */
         .bottom-bar {
             position: fixed;
             bottom: 0;
@@ -197,7 +196,6 @@
             100% { transform: scale(0.95); opacity: 0.8; }
         }
 
-        /* الخط المزخرف الخاص بنص التلاوة المسموعة */
         .transcript-box {
             font-family: 'Amiri', serif;
             font-size: 1.4rem;
@@ -371,94 +369,4 @@
         }
 
         function toArabicNumerals(num) {
-            return num.toString().replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-        }
-
-        function highlightAya(ayaNumber) {
-            const allAyas = document.querySelectorAll('.aya');
-            allAyas.forEach(el => el.classList.remove('active'));
-
-            const targetAya = document.querySelector(`.aya[data-number="${ayaNumber}"]`);
-            if (targetAya) {
-                targetAya.classList.add('active');
-                targetAya.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('متصفحك لا يدعم خاصية التعرف الصوتي المباشر. يفضل استخدام متصفح Google Chrome.');
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ar-SA';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onstart = () => {
-                isListening = true;
-                statusDot.classList.add('listening');
-                statusText.textContent = 'جاري الاستماع للتلاوة...';
-                micBtnText.textContent = 'إيقاف التتبع';
-                micBtn.style.background = '#c62828';
-            };
-
-            recognition.onresult = (event) => {
-                let spokenText = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    spokenText += event.results[i][0].transcript;
-                }
-                transcriptBox.textContent = `المسموع: ${spokenText}`;
-                matchSpokenTextToAya(spokenText);
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech Error:', event.error);
-            };
-
-            recognition.onend = () => {
-                if (isListening) {
-                    recognition.start();
-                } else {
-                    statusDot.classList.remove('listening');
-                    statusText.textContent = 'الميكروفون متوقف';
-                    micBtnText.textContent = 'تشغيل التتبع الصوتي';
-                    micBtn.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                }
-            };
-        }
-
-        function matchSpokenTextToAya(spoken) {
-            const cleanSpoken = cleanArabicText(spoken);
-            if (cleanSpoken.length < 3) return;
-
-            const ayas = document.querySelectorAll('.aya');
-            ayas.forEach(ayaEl => {
-                const cleanAyaText = ayaEl.dataset.textClean;
-                if (cleanSpoken.includes(cleanAyaText) || cleanAyaText.includes(cleanSpoken.slice(-15))) {
-                    highlightAya(ayaEl.dataset.number);
-                }
-            });
-        }
-
-        surahSelect.addEventListener('change', (e) => {
-            loadSurah(e.target.value);
-        });
-
-        micBtn.addEventListener('click', () => {
-            if (!recognition) initSpeechRecognition();
-
-            if (isListening) {
-                isListening = false;
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
-        });
-
-        fetchSurahList();
-    </script>
-</body>
-</html>
+            return
